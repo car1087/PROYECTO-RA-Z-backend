@@ -67,7 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     localStorage.setItem('activeUser', email);
                 }
 
-                window.location.href = "dashboard.html";
+                window.location.href = "modulos/dashboard.html";
                 
             } catch (error) {
                 alert(error.message);
@@ -192,7 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
 
                 alert("Registro exitoso. Redirigiendo al dashboard...");
-                window.location.href = "dashboard.html";
+                window.location.href = "modulos/dashboard.html";
             } catch (error) {
                 alert(error.message);
             }
@@ -214,10 +214,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     localStorage.setItem('activeUser', email);
                     localStorage.setItem('user', JSON.stringify(json.user));
                 } else {
-                    window.location.href = 'index.html';
+                    window.location.href = '/';
                 }
             } catch (e) {
-                window.location.href = 'index.html';
+                window.location.href = '/';
             }
         };
 
@@ -240,7 +240,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                 localStorage.removeItem("activeUser");
                 localStorage.removeItem('user');
-                window.location.href = "index.html";
+                window.location.href = "/";
             });
         }
     }

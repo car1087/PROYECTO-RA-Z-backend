@@ -22,7 +22,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
-app.use(express.static(projectRoot));
+app.use(express.static(path.join(projectRoot, 'public')));
 
 // Instantiate controllers and repositories
 const dashboardRepository = new DashboardRepository();
