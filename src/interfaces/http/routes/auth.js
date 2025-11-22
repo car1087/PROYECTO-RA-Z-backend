@@ -11,8 +11,13 @@ router.post('/register', (req, res) => authController.register(req, res));
 
 // Endpoint to get current authenticated user (reads token from cookie or Authorization header)
 const authMiddleware = require('../middlewares/authMiddleware');
-router.get('/me', authMiddleware, (req, res) => {
-	res.json({ user: req.user });
+router.get('/me', authMiddleware, async (req, res) => {
+	try {
+		const user = await userRepository.findById(req.user.id);
+		res.json({ user });
+	} catch (error) {
+		res.status(500).json({ error: 'Error fetching user' });
+	}
 });
 
 // Logout: clear cookie

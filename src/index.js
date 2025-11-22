@@ -4,6 +4,9 @@ const cors = require('cors');
 const path = require('path');
 const authRoutes = require('./interfaces/http/routes/auth');
 const dashboardRoutes = require('./interfaces/http/routes/dashboard.routes');
+const enfermedadesRoutes = require('./interfaces/http/routes/enfermedades.routes');
+const medicamentosRoutes = require('./interfaces/http/routes/medicamentos.routes');
+const alergiasRoutes = require('./interfaces/http/routes/alergias.routes');
 const authMiddleware = require('./interfaces/http/middlewares/authMiddleware');
 const DashboardController = require('./interfaces/http/controllers/dashboardController');
 const DashboardRepository = require('./infrastructure/repositories/dashboardRepository');
@@ -45,6 +48,9 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/enfermedades', enfermedadesRoutes);
+app.use('/api/medicamentos', medicamentosRoutes);
+app.use('/api/alergias', alergiasRoutes);
 
 // Ruta pública para perfil público
 app.get('/api/perfil-publico/:id', (req, res) => dashboardController.getPerfilPublico(req, res));

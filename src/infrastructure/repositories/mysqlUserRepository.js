@@ -4,8 +4,18 @@ const pool = require('../database/mysql');
 class MysqlUserRepository extends UserRepository {
   async findByEmail(email) {
     const [rows] = await pool.query(
-      'SELECT * FROM users WHERE email = ?', 
+      'SELECT * FROM users WHERE email = ?',
       [email]
+    );
+    return rows[0];
+  }
+
+  async findById(id) {
+    const [rows] = await pool.query(
+      `SELECT u.*, r.name as rol FROM users u
+       LEFT JOIN roles r ON u.role_id = r.id
+       WHERE u.id = ?`,
+      [id]
     );
     return rows[0];
   }

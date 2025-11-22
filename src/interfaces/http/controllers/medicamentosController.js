@@ -69,7 +69,7 @@ class MedicamentosController {
                 return res.status(404).json({ error: 'Medicamento no encontrado' });
             }
 
-            res.json({ message: 'Medicamento actualizado correctamente' });
+            res.status(200).json({ message: 'Medicamento actualizado' });
         } catch (error) {
             console.error('Error al actualizar medicamento:', error);
             res.status(500).json({ error: 'Error al actualizar medicamento' });
@@ -83,11 +83,7 @@ class MedicamentosController {
 
             const result = await this.medicamentosRepository.deleteMedicamento(id, userId);
 
-            if (result.affectedRows === 0) {
-                return res.status(404).json({ error: 'Medicamento no encontrado' });
-            }
-
-            res.json({ message: 'Medicamento eliminado correctamente' });
+            res.status(200).json({ message: 'Medicamento eliminado' });
         } catch (error) {
             console.error('Error al eliminar medicamento:', error);
             res.status(500).json({ error: 'Error al eliminar medicamento' });

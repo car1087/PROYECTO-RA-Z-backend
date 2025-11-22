@@ -50,11 +50,7 @@ class EnfermedadesBaseController {
 
             const result = await this.enfermedadesBaseRepository.updateEnfermedad(id, userId, nombre_enfermedad);
 
-            if (result.affectedRows === 0) {
-                return res.status(404).json({ error: 'Enfermedad no encontrada' });
-            }
-
-            res.json({ message: 'Enfermedad actualizada correctamente' });
+            res.status(200).json({ message: 'Enfermedad actualizada' });
         } catch (error) {
             console.error('Error al actualizar enfermedad:', error);
             res.status(500).json({ error: 'Error al actualizar enfermedad' });
