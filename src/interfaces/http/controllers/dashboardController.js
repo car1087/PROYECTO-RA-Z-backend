@@ -59,10 +59,57 @@ class DashboardController {
         }
     }
 
+    async updateContactoEmergencia(req, res) {
+        try {
+            const userId = req.user.id;
+            const { id } = req.params;
+            const { nombre, telefono, relacion } = req.body;
+
+            if (!nombre || !telefono || !relacion) {
+                return res.status(400).json({ error: 'Nombre, teléfono y relación son requeridos' });
+            }
+
+            const result = await this.dashboardRepository.updateContacto(id, userId, {
+                nombre,
+                telefono,
+                relacion
+            });
+
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ error: 'Contacto no encontrado' });
+            }
+
+            res.json({ message: 'Contacto actualizado correctamente' });
+        } catch (error) {
+            console.error('Error al actualizar contacto:', error);
+            res.status(500).json({ error: 'Error al actualizar contacto' });
+        }
+    }
+
+    async deleteContactoEmergencia(req, res) {
+        try {
+            const userId = req.user.id;
+            const { id } = req.params;
+
+            const result = await this.dashboardRepository.deleteContacto(userId, id);
+
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ error: 'Contacto no encontrado' });
+            }
+
+            res.json({ message: 'Contacto eliminado correctamente' });
+        } catch (error) {
+            console.error('Error al eliminar contacto:', error);
+            res.status(500).json({ error: 'Error al eliminar contacto' });
+        }
+    }
+
     async getPerfilPublico(req, res) {
         try {
+            console.log('*** INICIANDO RUTA PÚBLICA DE PERFIL ***');
             const { id } = req.params;
-            const perfil = await this.dashboardRepository.getPerfilPublico(id);
+            const userIdInt = parseInt(id, 10); // CONVERSIÓN CRÍTICA
+            const perfil = await this.dashboardRepository.getPerfilPublico(userIdInt); // PASA EL NÚMERO
             res.json(perfil);
         } catch (error) {
             console.error('Error al obtener perfil público:', error);
@@ -70,17 +117,34 @@ class DashboardController {
         }
     }
 
-    async updateInformacionMedica(req, res) {
+    async getEstadoDispositivo(req, res) {
         try {
             const userId = req.user.id;
+            const estado = await this.dashboardRepository.getEstadoDispositivo(userId);
+            res.json(estado);
+        } catch (error) {
+            console.error('Error al obtener estado del dispositivo:', error);
+            res.status(500).json({ error: 'Error al obtener estado del dispositivo' });
+        }
+    }
+
+    async updateInformacionMedica(req, res) {
+        try {
+            console.log('USER ID:', req.user.id);
+            console.log('BODY DATA:', req.body);
+
+            const userId = req.user.id;
+
+            // Extrae fecha_nacimiento y el resto de los datos
+            const { fecha_nacimiento, ...otrosDatos } = req.body;
 
             // Formatea la fecha (si existe)
-            const fechaFormateada = req.body.fecha_nacimiento
-                ? new Date(req.body.fecha_nacimiento).toISOString().split('T')[0]
+            const fechaFormateada = fecha_nacimiento
+                ? new Date(fecha_nacimiento).toISOString().split('T')[0]
                 : null;
 
             // Crea el objeto de datos usando el spread operator
-            const dataParaGuardar = { ...req.body, fecha_nacimiento: fechaFormateada };
+            const dataParaGuardar = { ...otrosDatos, fecha_nacimiento: fechaFormateada };
 
             // Pasa el objeto completo al repositorio
             const result = await this.dashboardRepository.upsertInformacionMedica(userId, dataParaGuardar);

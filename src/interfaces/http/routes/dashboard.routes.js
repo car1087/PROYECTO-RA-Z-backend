@@ -40,8 +40,20 @@ router.get('/contactos-emergencia',
     (req, res) => dashboardController.getContactosEmergencia(req, res)
 );
 
+router.get('/contactos',
+    (req, res) => dashboardController.getContactosEmergencia(req, res)
+);
+
 router.post('/contactos-emergencia',
     (req, res) => dashboardController.createContactoEmergencia(req, res)
+);
+
+router.put('/contactos-emergencia/:id',
+    (req, res) => dashboardController.updateContactoEmergencia(req, res)
+);
+
+router.delete('/contactos-emergencia/:id',
+    (req, res) => dashboardController.deleteContactoEmergencia(req, res)
 );
 
 // Rutas de datos personales
@@ -100,6 +112,11 @@ router.post('/alergias',
 
 router.delete('/alergias/:id',
     (req, res) => alergiasController.deleteAlergia(req, res)
+);
+
+// Ruta para obtener el estado del dispositivo QR
+router.get('/dispositivo/estado',
+    (req, res) => dashboardController.getEstadoDispositivo(req, res)
 );
 
 module.exports = router;

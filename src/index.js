@@ -61,6 +61,8 @@ app.post('/api/enfermedades', authMiddleware, (req, res) => enfermedadesBaseCont
 app.post('/api/medicamentos', authMiddleware, (req, res) => medicamentosController.createMedicamento(req, res));
 app.post('/api/alergias', authMiddleware, (req, res) => alergiasController.createAlergia(req, res));
 app.post('/api/contactos', authMiddleware, (req, res) => dashboardController.createContactoEmergencia(req, res));
+app.put('/api/contactos/:id', authMiddleware, (req, res) => dashboardController.updateContactoEmergencia(req, res));
+app.delete('/api/contactos/:id', authMiddleware, (req, res) => dashboardController.deleteContactoEmergencia(req, res));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

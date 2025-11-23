@@ -25,44 +25,58 @@ class DashboardRepository {
         return result;
     }
 
+    async updateContacto(id, userId, data) {
+        const [result] = await pool.query(
+            'UPDATE contactos_emergencia SET nombre = ?, telefono = ?, relacion = ? WHERE id = ? AND user_id = ?',
+            [data.nombre, data.telefono, data.relacion, id, userId]
+        );
+        return result;
+    }
+
+    async deleteContacto(userId, id) {
+        const [result] = await pool.query(
+            'DELETE FROM contactos_emergencia WHERE id = ? AND user_id = ?',
+            [id, userId]
+        );
+        return result;
+    }
+
     async getPerfilPublico(userId) {
-        // Obtener información médica
-        const [informacionMedica] = await pool.query(
-            'SELECT * FROM informacion_medica WHERE user_id = ?',
+        try {
+            // Ejecutar todas las consultas simultáneamente usando Promise.all
+            const [
+                [informacionMedica],
+                [alergias],
+                [medicamentos],
+                [enfermedadesBase],
+                [contactosEmergencia]
+            ] = await Promise.all([
+                pool.query('SELECT * FROM informacion_medica WHERE user_id = ?', [userId]),
+                pool.query('SELECT * FROM alergias WHERE user_id = ?', [userId]),
+                pool.query('SELECT * FROM medicamentos WHERE user_id = ?', [userId]),
+                pool.query('SELECT * FROM enfermedades_base WHERE user_id = ?', [userId]),
+                pool.query('SELECT * FROM contactos_emergencia WHERE user_id = ? ORDER BY es_principal DESC', [userId])
+            ]);
+
+            return {
+                informacion_medica: informacionMedica[0] || null,
+                alergias,
+                medicamentos,
+                enfermedades_base: enfermedadesBase,
+                contactos_emergencia: contactosEmergencia
+            };
+        } catch (error) {
+            console.error('Error FATAL en getPerfilPublico (Repository):', error);
+            throw error; // Esto lanza el error al Controlador.
+        }
+    }
+
+    async getEstadoDispositivo(userId) {
+        const [rows] = await pool.query(
+            'SELECT estado FROM dispositivos_qr WHERE user_id = ?',
             [userId]
         );
-
-        // Obtener alergias
-        const [alergias] = await pool.query(
-            'SELECT * FROM alergias WHERE user_id = ?',
-            [userId]
-        );
-
-        // Obtener medicamentos
-        const [medicamentos] = await pool.query(
-            'SELECT * FROM medicamentos WHERE user_id = ?',
-            [userId]
-        );
-
-        // Obtener enfermedades base
-        const [enfermedadesBase] = await pool.query(
-            'SELECT * FROM enfermedades_base WHERE user_id = ?',
-            [userId]
-        );
-
-        // Obtener contactos de emergencia
-        const [contactosEmergencia] = await pool.query(
-            'SELECT * FROM contactos_emergencia WHERE user_id = ? ORDER BY es_principal DESC',
-            [userId]
-        );
-
-        return {
-            informacion_medica: informacionMedica[0] || null,
-            alergias,
-            medicamentos,
-            enfermedades_base: enfermedadesBase,
-            contactos_emergencia: contactosEmergencia
-        };
+        return rows[0] ? { estado: rows[0].estado } : { estado: 'Inactivo' };
     }
 
     async upsertInformacionMedica(userId, data) {

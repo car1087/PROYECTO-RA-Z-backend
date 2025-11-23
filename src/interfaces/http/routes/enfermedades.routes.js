@@ -13,4 +13,7 @@ router.use(authMiddleware);
 // Ruta para actualizar una enfermedad
 router.put('/:id', (req, res) => enfermedadesBaseController.updateEnfermedad(req, res));
 
+// Ruta para eliminar una enfermedad
+router.delete('/:id', authMiddleware, (req, res) => enfermedadesBaseController.deleteEnfermedad(req, res));
+
 module.exports = router;

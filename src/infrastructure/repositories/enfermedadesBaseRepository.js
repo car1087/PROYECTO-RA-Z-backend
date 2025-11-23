@@ -11,7 +11,7 @@ class EnfermedadesBaseRepository {
 
     async createEnfermedad(userId, nombreEnfermedad) {
         const [result] = await pool.query(
-            `INSERT INTO enfermedades_base (user_id, nombre_enfermedad) VALUES (?, ?)`,
+            `INSERT INTO enfermedades_base (user_id, nombre_enfermedad, created_at, updated_at) VALUES (?, ?, NOW(), NOW())`,
             [userId, nombreEnfermedad]
         );
         return result;
