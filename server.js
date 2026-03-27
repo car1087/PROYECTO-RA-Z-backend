@@ -5,26 +5,27 @@ const app = express();
 app.use(cors({ origin: '*', credentials: true }));
 app.use(express.json());
 
-// RUTA DE PRUEBA (Puesta arriba de todo para que no falle)
+// 1. RUTA DE PRUEBA (Prioritaria)
 app.get("/test", (req, res) => {
   res.json({ status: "ok", mensaje: "Conexión exitosa con Carlos" });
 });
 
-// Ruta principal
+// 2. Ruta principal
 app.get("/", (req, res) => {
   res.send("Servidor Backend de Carlos funcionando correctamente!");
 });
 
-// Intento de cargar rutas (si falla, el servidor seguirá vivo por las rutas de arriba)
+// 3. Intento de cargar rutas de autenticación
 try {
-    // Prueba con esta ruta si el archivo está en la raíz según tu foto
+    // Si tu archivo authRoutes.js está en la raíz, esta ruta es correcta
     const authRoutes = require('./authRoutes'); 
     app.use('/api/auth', authRoutes);
 } catch (e) {
-    console.log("Aún no se encuentra el archivo authRoutes, pero el test funcionará.");
+    console.log("Archivo authRoutes no encontrado, pero el servidor sigue vivo.");
 }
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor en puerto ${PORT}`);
+// 4. Configuración del puerto para Railway
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Servidor corriendo en puerto ${PORT}`);
 });
