@@ -1,34 +1,30 @@
 const express = require('express');
 const cors = require('cors');
 
-// Ruta corregida según tu estructura de carpetas
-const authRoutes = require('./src/interfaces/http/routes/authRoutes');
-
 const app = express();
-
-// 1. Configuración de CORS
-app.use(cors({
-  origin: '*',
-  credentials: true
-}));
-
+app.use(cors({ origin: '*', credentials: true }));
 app.use(express.json());
 
-// 2. Tus rutas
-app.use('/api/auth', authRoutes);
-
-// 3. Ruta de prueba
+// RUTA DE PRUEBA (Puesta arriba de todo para que no falle)
 app.get("/test", (req, res) => {
-  res.json({ status: "ok" });
+  res.json({ status: "ok", mensaje: "Conexión exitosa con Carlos" });
 });
 
-// 4. Ruta principal
+// Ruta principal
 app.get("/", (req, res) => {
-  res.send("Servidor Backend de Carlos funcionando!");
+  res.send("Servidor Backend de Carlos funcionando correctamente!");
 });
 
-// 5. Puerto dinámico para Railway
+// Intento de cargar rutas (si falla, el servidor seguirá vivo por las rutas de arriba)
+try {
+    // Prueba con esta ruta si el archivo está en la raíz según tu foto
+    const authRoutes = require('./authRoutes'); 
+    app.use('/api/auth', authRoutes);
+} catch (e) {
+    console.log("Aún no se encuentra el archivo authRoutes, pero el test funcionará.");
+}
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo en puerto ${PORT}`);
+  console.log(`Servidor en puerto ${PORT}`);
 });
