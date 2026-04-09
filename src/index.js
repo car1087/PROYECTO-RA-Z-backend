@@ -4,6 +4,7 @@ const cors = require('cors');
 const path = require('path');
 const authRoutes = require('./interfaces/http/routes/auth');
 const dashboardRoutes = require('./interfaces/http/routes/dashboard.routes');
+const contactosRoutes = require('./interfaces/http/routes/contactosRoutes');
 const authMiddleware = require('./interfaces/http/middlewares/authMiddleware');
 const DashboardController = require('./interfaces/http/controllers/dashboardController');
 const DashboardRepository = require('./infrastructure/repositories/dashboardRepository');
@@ -45,6 +46,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api', contactosRoutes);
 
 // Ruta pública para perfil público
 app.get('/api/perfil-publico/:id', (req, res) => dashboardController.getPerfilPublico(req, res));
@@ -54,7 +56,6 @@ app.put('/api/informacion-medica', authMiddleware, (req, res) => dashboardContro
 app.post('/api/enfermedades', authMiddleware, (req, res) => enfermedadesBaseController.createEnfermedad(req, res));
 app.post('/api/medicamentos', authMiddleware, (req, res) => medicamentosController.createMedicamento(req, res));
 app.post('/api/alergias', authMiddleware, (req, res) => alergiasController.createAlergia(req, res));
-app.post('/api/contactos', authMiddleware, (req, res) => dashboardController.createContactoEmergencia(req, res));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
