@@ -31,13 +31,9 @@ class DatosPersonalesController {
             const userId = req.user.id;
             const { nombre_completo, tipo_documento, numero_documento, fecha_nacimiento, grupo_sanguineo, numero_telefono } = req.body;
 
-            console.log('User ID:', userId);
-            console.log('Datos recibidos:', { nombre_completo, tipo_documento, numero_documento, fecha_nacimiento, grupo_sanguineo, numero_telefono });
-
             // Validaciones básicas
             if (!nombre_completo || !tipo_documento || !numero_documento || !fecha_nacimiento || !grupo_sanguineo || !numero_telefono) {
-                console.log('Validación fallida - campos faltantes');
-                return res.status(400).json({ error: 'Todos los campos son requeridos' });
+                return res.status(400).json({ message: 'Todos los campos son requeridos', error: 'Todos los campos son requeridos' });
             }
 
             const result = await this.datosPersonalesRepository.saveDatosPersonales(userId, {
@@ -49,12 +45,15 @@ class DatosPersonalesController {
                 numero_telefono
             });
 
-            console.log('Resultado de inserción:', result);
-
             res.json({ message: 'Datos personales guardados correctamente' });
         } catch (error) {
             console.error('Error al guardar datos personales:', error);
-            res.status(500).json({ error: 'Error al guardar datos personales' });
+            res.status(500).json({
+                message: 'Error al guardar datos personales',
+                error: 'Error al guardar datos personales',
+                code: error.code || null,
+                detail: error.message || null
+            });
         }
     }
 }
