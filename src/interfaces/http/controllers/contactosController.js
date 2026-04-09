@@ -22,7 +22,12 @@ class ContactosController {
             res.status(201).json({ message: 'Contacto guardado correctamente', id: result.insertId });
         } catch (error) {
             console.error('Error al crear contacto:', error);
-            res.status(500).json({ message: 'Error al crear contacto', error: 'Error al crear contacto' });
+            res.status(500).json({
+                message: 'Error al crear contacto',
+                error: 'Error al crear contacto',
+                code: error.code || null,
+                detail: error.message || null
+            });
         }
     }
 
@@ -33,7 +38,12 @@ class ContactosController {
             res.json({ contactos });
         } catch (error) {
             console.error('Error al obtener contactos:', error);
-            res.status(500).json({ message: 'Error al obtener contactos', error: 'Error al obtener contactos' });
+            res.status(500).json({
+                message: 'Error al obtener contactos',
+                error: 'Error al obtener contactos',
+                code: error.code || null,
+                detail: error.message || null
+            });
         }
     }
 }
