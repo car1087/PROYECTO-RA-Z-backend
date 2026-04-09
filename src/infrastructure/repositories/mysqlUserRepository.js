@@ -1,5 +1,5 @@
 const UserRepository = require('../../domain/repositories/userRepository');
-const pool = require('../database/mysql');
+const { pool } = require('../database/mysql');
 
 class MysqlUserRepository extends UserRepository {
   async findByEmail(email) {

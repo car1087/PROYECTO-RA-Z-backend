@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 class LoginUseCase {
@@ -8,11 +9,23 @@ class LoginUseCase {
   async execute(email, password) {
     const user = await this.userRepository.findByEmail(email);
     if (!user) {
-      throw new Error('Usuario no encontrado');
+      const error = new Error('Credenciales invalidas');
+      error.statusCode = 401;
+      throw error;
     }
 
-    if (password !== user.password_hash) {
-      throw new Error('Contraseña incorrecta');
+    let passwordMatches = false;
+
+    if (user.password_hash && user.password_hash.startsWith('$2')) {
+      passwordMatches = await bcrypt.compare(password, user.password_hash);
+    } else {
+      passwordMatches = password === user.password_hash;
+    }
+
+    if (!passwordMatches) {
+      const error = new Error('Credenciales invalidas');
+      error.statusCode = 401;
+      throw error;
     }
 
     const token = jwt.sign(

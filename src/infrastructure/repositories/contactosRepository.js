@@ -1,18 +1,18 @@
-const pool = require('../database/mysql');
+const { pool } = require('../database/mysql');
 
 class ContactosRepository {
     async createContacto(data) {
         const [result] = await pool.query(
-            `INSERT INTO contactos (nombre, telefono, parentesco, user_id)
+            `INSERT INTO contactos (user_id, nombre, telefono, relacion)
             VALUES (?, ?, ?, ?)`,
-            [data.nombre, data.telefono, data.parentesco, data.user_id]
+            [data.user_id, data.nombre, data.telefono, data.relacion]
         );
         return result;
     }
 
     async getContactosByUserId(userId) {
         const [rows] = await pool.query(
-            'SELECT * FROM contactos WHERE user_id = ? ORDER BY id',
+            'SELECT id, user_id, nombre, telefono, relacion FROM contactos WHERE user_id = ? ORDER BY id DESC',
             [userId]
         );
         return rows;

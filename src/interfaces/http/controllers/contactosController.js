@@ -5,23 +5,24 @@ class ContactosController {
 
     async createContacto(req, res) {
         try {
-            const { nombre, telefono, parentesco, user_id } = req.body;
+            const userId = req.user.id;
+            const { nombre, telefono, relacion } = req.body;
 
-            if (!nombre || !telefono || !parentesco || !user_id) {
-                return res.status(400).json({ error: 'nombre, telefono, parentesco y user_id son requeridos' });
+            if (!nombre || !telefono || !relacion) {
+                return res.status(400).json({ message: 'nombre, telefono y relacion son requeridos', error: 'nombre, telefono y relacion son requeridos' });
             }
 
             const result = await this.contactosRepository.createContacto({
                 nombre,
                 telefono,
-                parentesco,
-                user_id
+                relacion,
+                user_id: userId
             });
 
             res.status(201).json({ message: 'Contacto guardado correctamente', id: result.insertId });
         } catch (error) {
             console.error('Error al crear contacto:', error);
-            res.status(500).json({ error: 'Error al crear contacto' });
+            res.status(500).json({ message: 'Error al crear contacto', error: 'Error al crear contacto' });
         }
     }
 
@@ -29,10 +30,10 @@ class ContactosController {
         try {
             const userId = req.user.id;
             const contactos = await this.contactosRepository.getContactosByUserId(userId);
-            res.json(contactos);
+            res.json({ contactos });
         } catch (error) {
             console.error('Error al obtener contactos:', error);
-            res.status(500).json({ error: 'Error al obtener contactos' });
+            res.status(500).json({ message: 'Error al obtener contactos', error: 'Error al obtener contactos' });
         }
     }
 }

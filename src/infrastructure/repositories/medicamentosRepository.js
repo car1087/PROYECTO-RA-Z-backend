@@ -1,4 +1,4 @@
-const pool = require('../database/mysql');
+const { pool } = require('../database/mysql');
 
 class MedicamentosRepository {
     async getMedicamentosByUserId(userId) {

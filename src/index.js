@@ -18,10 +18,33 @@ const AlergiasRepository = require('./infrastructure/repositories/alergiasReposi
 const app = express();
 const projectRoot = path.resolve(__dirname, '..');
 
-app.use(cors({
-  origin: 'http://localhost:5173',
-  credentials: true
-}));
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://proyecto-ra-z-frontend.vercel.app'
+];
+
+const corsOptions = {
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error('Origen no permitido por CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 204
+};
+
+app.use(cors(corsOptions));
+app.use((req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+
+  return next();
+});
 app.use(express.json());
 app.use(express.static(path.join(projectRoot, 'public')));
 

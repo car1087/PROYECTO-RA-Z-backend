@@ -22,3 +22,13 @@ ALTER TABLE users ADD CONSTRAINT fk_users_role FOREIGN KEY (role_id) REFERENCES 
 
 -- Actualizar usuarios existentes para que tengan role_id por defecto
 UPDATE users SET role_id = (SELECT id FROM roles WHERE code = 'usuario') WHERE role_id IS NULL;
+
+CREATE TABLE IF NOT EXISTS contactos (
+  id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+  user_id BIGINT UNSIGNED NOT NULL,
+  nombre VARCHAR(255) NOT NULL,
+  telefono VARCHAR(50) NOT NULL,
+  relacion VARCHAR(100) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);

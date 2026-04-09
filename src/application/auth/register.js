@@ -1,3 +1,5 @@
+const bcrypt = require('bcrypt');
+
 class RegisterUseCase {
   constructor(userRepository) {
     this.userRepository = userRepository;
@@ -20,9 +22,11 @@ class RegisterUseCase {
       throw new Error('Tipo de documento inválido');
     }
 
+    const passwordHash = await bcrypt.hash(userData.password, 10);
+
     const user = {
       email: userData.email,
-      password_hash: userData.password,  // Ya no hasheamos la contraseña
+      password_hash: passwordHash,
       fullName: userData.fullName,
       docType: userData.docType || null,
       docNumber: userData.docNumber || null,

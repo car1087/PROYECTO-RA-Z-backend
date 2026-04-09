@@ -9,6 +9,8 @@ const EnfermedadesBaseController = require('../controllers/enfermedadesBaseContr
 const EnfermedadesBaseRepository = require('../../../infrastructure/repositories/enfermedadesBaseRepository');
 const AlergiasController = require('../controllers/alergiasController');
 const AlergiasRepository = require('../../../infrastructure/repositories/alergiasRepository');
+const ContactosController = require('../controllers/contactosController');
+const ContactosRepository = require('../../../infrastructure/repositories/contactosRepository');
 const authMiddleware = require('../middlewares/authMiddleware');
 
 const router = express.Router();
@@ -22,6 +24,8 @@ const enfermedadesBaseRepository = new EnfermedadesBaseRepository();
 const enfermedadesBaseController = new EnfermedadesBaseController(enfermedadesBaseRepository);
 const alergiasRepository = new AlergiasRepository();
 const alergiasController = new AlergiasController(alergiasRepository);
+const contactosRepository = new ContactosRepository();
+const contactosController = new ContactosController(contactosRepository);
 
 // Proteger todas las rutas del dashboard con el middleware de autenticación
 router.use(authMiddleware);
@@ -38,6 +42,10 @@ router.post('/informacion-medica',
 // Rutas de contactos de emergencia
 router.get('/contactos-emergencia',
     (req, res) => dashboardController.getContactosEmergencia(req, res)
+);
+
+router.get('/contactos',
+    (req, res) => contactosController.getContactos(req, res)
 );
 
 router.post('/contactos-emergencia',
