@@ -88,7 +88,12 @@ class DashboardController {
             res.json({ message: 'Información médica actualizada correctamente' });
         } catch (error) {
             console.error('Error al actualizar información médica:', error);
-            res.status(500).json({ error: 'Error al actualizar información médica' });
+            res.status(500).json({
+                message: 'Error al actualizar información médica',
+                error: 'Error al actualizar información médica',
+                code: error.code || null,
+                detail: error.message || null
+            });
         }
     }
 }

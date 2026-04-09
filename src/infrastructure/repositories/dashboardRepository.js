@@ -66,20 +66,86 @@ class DashboardRepository {
     }
 
     async upsertInformacionMedica(userId, data) {
-        const [result] = await pool.query(
-            `INSERT INTO informacion_medica
-            (user_id, nombre_completo, tipo_documento, numero_documento, fecha_nacimiento, numero_telefono, grupo_sanguineo)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-            ON DUPLICATE KEY UPDATE
-                nombre_completo = VALUES(nombre_completo),
-                tipo_documento = VALUES(tipo_documento),
-                numero_documento = VALUES(numero_documento),
-                fecha_nacimiento = VALUES(fecha_nacimiento),
-                numero_telefono = VALUES(numero_telefono),
-                grupo_sanguineo = VALUES(grupo_sanguineo)`,
-            [userId, data.nombre_completo, data.tipo_documento, data.numero_documento, data.fecha_nacimiento, data.numero_telefono, data.grupo_sanguineo]
-        );
-        return result;
+        const attempts = [
+            {
+                updateSql: `UPDATE informacion_medica
+                    SET nombre_completo = ?,
+                        tipo_documento = ?,
+                        numero_documento = ?,
+                        fecha_nacimiento = ?,
+                        numero_telefono = ?,
+                        grupo_sanguineo = ?
+                    WHERE user_id = ?`,
+                updateParams: [
+                    data.nombre_completo || null,
+                    data.tipo_documento || null,
+                    data.numero_documento || null,
+                    data.fecha_nacimiento || null,
+                    data.numero_telefono || null,
+                    data.grupo_sanguineo || null,
+                    userId
+                ],
+                insertSql: `INSERT INTO informacion_medica
+                    (user_id, nombre_completo, tipo_documento, numero_documento, fecha_nacimiento, numero_telefono, grupo_sanguineo)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                insertParams: [
+                    userId,
+                    data.nombre_completo || null,
+                    data.tipo_documento || null,
+                    data.numero_documento || null,
+                    data.fecha_nacimiento || null,
+                    data.numero_telefono || null,
+                    data.grupo_sanguineo || null
+                ]
+            },
+            {
+                updateSql: `UPDATE informacion_medica
+                    SET tipo_sangre = ?,
+                        alergias = ?,
+                        medicamentos = ?,
+                        notas_medicas = ?
+                    WHERE user_id = ?`,
+                updateParams: [
+                    data.tipo_sangre || data.grupo_sanguineo || null,
+                    data.alergias || null,
+                    data.medicamentos || null,
+                    data.notas_medicas || null,
+                    userId
+                ],
+                insertSql: `INSERT INTO informacion_medica
+                    (user_id, tipo_sangre, alergias, medicamentos, notas_medicas)
+                    VALUES (?, ?, ?, ?, ?)`,
+                insertParams: [
+                    userId,
+                    data.tipo_sangre || data.grupo_sanguineo || null,
+                    data.alergias || null,
+                    data.medicamentos || null,
+                    data.notas_medicas || null
+                ]
+            }
+        ];
+
+        let lastError;
+
+        for (const attempt of attempts) {
+            try {
+                const [updateResult] = await pool.query(attempt.updateSql, attempt.updateParams);
+                if (updateResult.affectedRows > 0) {
+                    return updateResult;
+                }
+
+                const [insertResult] = await pool.query(attempt.insertSql, attempt.insertParams);
+                return insertResult;
+            } catch (error) {
+                const recoverable = error.code === 'ER_NO_SUCH_TABLE' || error.code === 'ER_BAD_FIELD_ERROR';
+                if (!recoverable) {
+                    throw error;
+                }
+                lastError = error;
+            }
+        }
+
+        throw lastError;
     }
 }
 
