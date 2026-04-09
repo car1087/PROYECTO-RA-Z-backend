@@ -16,7 +16,7 @@ const AlergiasController = require('./interfaces/http/controllers/alergiasContro
 const AlergiasRepository = require('./infrastructure/repositories/alergiasRepository');
 
 const app = express();
-const projectRoot = '/Users/user/Desktop/proyecto sena/proyectosena';
+const projectRoot = path.resolve(__dirname, '..');
 
 app.use(cors({
   origin: 'http://localhost:5173',
@@ -36,12 +36,7 @@ const alergiasRepository = new AlergiasRepository();
 const alergiasController = new AlergiasController(alergiasRepository);
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(projectRoot, 'index.html'), (err) => {
-        if (err) {
-            console.error('Error sending file:', err);
-            res.status(500).send('Error loading index.html');
-        }
-    });
+    res.status(200).json({ message: 'API running' });
 });
 
 app.use('/api/auth', authRoutes);
