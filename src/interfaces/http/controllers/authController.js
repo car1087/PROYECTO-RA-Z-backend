@@ -31,7 +31,7 @@ class AuthController {
       }
 
       // Default: return user info and token for frontend to store
-      res.json({ user: result.user, token: result.token });
+      res.json({ success: true, token: result.token, user: { id: result.user.id, fullName: result.user.fullName } });
     } catch (error) {
       res.status(400).json({ error: error.message });
     }
@@ -44,7 +44,7 @@ class AuthController {
       // Create JWT for the newly created user
       const token = jwt.sign(
         { id: result.id, email: result.email },
-        process.env.JWT_SECRET,
+        process.env.JWT_SECRET || 'default_secret_temporal',
         { expiresIn: '24h' }
       );
 

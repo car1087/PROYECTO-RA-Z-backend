@@ -11,13 +11,25 @@ module.exports = function authMiddleware(req, res, next) {
     }
   }
 
-  if (!token) return res.status(401).json({ error: 'No token provided' });
+  if (!token) {
+    console.log('Token faltante');
+    return res.status(401).json({ error: 'No token provided' });
+  }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'default_secret_temporal');
     req.user = { id: decoded.id, email: decoded.email };
     return next();
   } catch (err) {
-    return res.status(401).json({ error: 'Invalid or expired token' });
+    if (err.name === 'TokenExpiredError') {
+      console.log('Token expirado');
+      return res.status(401).json({ error: 'Token expirado' });
+    } else if (err.name === 'JsonWebTokenError') {
+      console.log('Firma del token inválida');
+      return res.status(401).json({ error: 'Firma del token inválida' });
+    } else {
+      console.log('Token inválido:', err.message);
+      return res.status(401).json({ error: 'Token inválido' });
+    }
   }
 };
