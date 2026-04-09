@@ -1,6 +1,11 @@
 const { pool } = require('../database/mysql');
 
 class DashboardRepository {
+    async getUserFullName(userId) {
+        const [rows] = await pool.query('SELECT full_name FROM users WHERE id = ?', [userId]);
+        return rows[0]?.full_name || null;
+    }
+
     async getInformacionMedica(userId) {
         const [rows] = await pool.query(
             'SELECT * FROM informacion_medica WHERE user_id = ?',
@@ -66,6 +71,8 @@ class DashboardRepository {
     }
 
     async upsertInformacionMedica(userId, data) {
+        const fallbackNombreCompleto = data.nombre_completo || await this.getUserFullName(userId) || 'Sin nombre';
+
         const attempts = [
             {
                 updateSql: `UPDATE informacion_medica
@@ -77,7 +84,7 @@ class DashboardRepository {
                         grupo_sanguineo = ?
                     WHERE user_id = ?`,
                 updateParams: [
-                    data.nombre_completo || null,
+                    data.nombre_completo || fallbackNombreCompleto,
                     data.tipo_documento || null,
                     data.numero_documento || null,
                     data.fecha_nacimiento || null,
@@ -90,7 +97,7 @@ class DashboardRepository {
                     VALUES (?, ?, ?, ?, ?, ?, ?)`,
                 insertParams: [
                     userId,
-                    data.nombre_completo || null,
+                    fallbackNombreCompleto,
                     data.tipo_documento || null,
                     data.numero_documento || null,
                     data.fecha_nacimiento || null,

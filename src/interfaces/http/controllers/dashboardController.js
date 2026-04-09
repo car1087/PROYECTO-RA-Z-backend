@@ -3,6 +3,17 @@ class DashboardController {
         this.dashboardRepository = dashboardRepository;
     }
 
+    normalizeDate(value) {
+        if (!value) return null;
+
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) {
+            return null;
+        }
+
+        return date.toISOString().split('T')[0];
+    }
+
     async getInformacionMedica(req, res) {
         try {
             const userId = req.user.id;
@@ -74,10 +85,7 @@ class DashboardController {
         try {
             const userId = req.user.id;
 
-            // Formatea la fecha (si existe)
-            const fechaFormateada = req.body.fecha_nacimiento
-                ? new Date(req.body.fecha_nacimiento).toISOString().split('T')[0]
-                : null;
+            const fechaFormateada = this.normalizeDate(req.body.fecha_nacimiento);
 
             // Crea el objeto de datos usando el spread operator
             const dataParaGuardar = { ...req.body, fecha_nacimiento: fechaFormateada };
