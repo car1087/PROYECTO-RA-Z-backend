@@ -71,88 +71,62 @@ class DashboardRepository {
     }
 
     async upsertInformacionMedica(userId, data) {
+        const [columnsRows] = await pool.query('SHOW COLUMNS FROM informacion_medica');
+        const availableColumns = new Set(columnsRows.map((row) => row.Field));
+
         const fallbackNombreCompleto = data.nombre_completo || await this.getUserFullName(userId) || 'Sin nombre';
 
-        const attempts = [
-            {
-                updateSql: `UPDATE informacion_medica
-                    SET nombre_completo = ?,
-                        tipo_documento = ?,
-                        numero_documento = ?,
-                        fecha_nacimiento = ?,
-                        numero_telefono = ?,
-                        grupo_sanguineo = ?
-                    WHERE user_id = ?`,
-                updateParams: [
-                    data.nombre_completo || fallbackNombreCompleto,
-                    data.tipo_documento || null,
-                    data.numero_documento || null,
-                    data.fecha_nacimiento || null,
-                    data.numero_telefono || null,
-                    data.grupo_sanguineo || null,
-                    userId
-                ],
-                insertSql: `INSERT INTO informacion_medica
-                    (user_id, nombre_completo, tipo_documento, numero_documento, fecha_nacimiento, numero_telefono, grupo_sanguineo)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                insertParams: [
-                    userId,
-                    fallbackNombreCompleto,
-                    data.tipo_documento || null,
-                    data.numero_documento || null,
-                    data.fecha_nacimiento || null,
-                    data.numero_telefono || null,
-                    data.grupo_sanguineo || null
-                ]
-            },
-            {
-                updateSql: `UPDATE informacion_medica
-                    SET tipo_sangre = ?,
-                        alergias = ?,
-                        medicamentos = ?,
-                        notas_medicas = ?
-                    WHERE user_id = ?`,
-                updateParams: [
-                    data.tipo_sangre || data.grupo_sanguineo || null,
-                    data.alergias || null,
-                    data.medicamentos || null,
-                    data.notas_medicas || null,
-                    userId
-                ],
-                insertSql: `INSERT INTO informacion_medica
-                    (user_id, tipo_sangre, alergias, medicamentos, notas_medicas)
-                    VALUES (?, ?, ?, ?, ?)`,
-                insertParams: [
-                    userId,
-                    data.tipo_sangre || data.grupo_sanguineo || null,
-                    data.alergias || null,
-                    data.medicamentos || null,
-                    data.notas_medicas || null
-                ]
-            }
-        ];
+        const normalizedData = {
+            nombre_completo: fallbackNombreCompleto,
+            tipo_documento: data.tipo_documento || null,
+            numero_documento: data.numero_documento || null,
+            fecha_nacimiento: data.fecha_nacimiento || null,
+            numero_telefono: data.numero_telefono || null,
+            grupo_sanguineo: data.grupo_sanguineo || data.tipo_sangre || null,
+            tipo_sangre: data.tipo_sangre || data.grupo_sanguineo || null,
+            alergias: data.alergias || null,
+            medicamentos: data.medicamentos || null,
+            notas_medicas: data.notas_medicas || null
+        };
 
-        let lastError;
+        const fieldsToPersist = Object.entries(normalizedData)
+            .filter(([column]) => availableColumns.has(column))
+            .map(([column, value]) => ({ column, value }));
 
-        for (const attempt of attempts) {
-            try {
-                const [updateResult] = await pool.query(attempt.updateSql, attempt.updateParams);
-                if (updateResult.affectedRows > 0) {
-                    return updateResult;
-                }
-
-                const [insertResult] = await pool.query(attempt.insertSql, attempt.insertParams);
-                return insertResult;
-            } catch (error) {
-                const recoverable = error.code === 'ER_NO_SUCH_TABLE' || error.code === 'ER_BAD_FIELD_ERROR';
-                if (!recoverable) {
-                    throw error;
-                }
-                lastError = error;
-            }
+        if (fieldsToPersist.length === 0) {
+            const error = new Error('La tabla informacion_medica no tiene columnas compatibles para guardar informacion');
+            error.code = 'INCOMPATIBLE_SCHEMA';
+            throw error;
         }
 
-        throw lastError;
+        const [existing] = await pool.query(
+            'SELECT user_id FROM informacion_medica WHERE user_id = ?',
+            [userId]
+        );
+
+        if (existing.length > 0) {
+            const setClause = fieldsToPersist.map((field) => `${field.column} = ?`).join(', ');
+            const updateParams = fieldsToPersist.map((field) => field.value);
+            updateParams.push(userId);
+
+            const [updateResult] = await pool.query(
+                `UPDATE informacion_medica SET ${setClause} WHERE user_id = ?`,
+                updateParams
+            );
+
+            return updateResult;
+        }
+
+        const insertColumns = ['user_id', ...fieldsToPersist.map((field) => field.column)];
+        const placeholders = insertColumns.map(() => '?').join(', ');
+        const insertParams = [userId, ...fieldsToPersist.map((field) => field.value)];
+
+        const [insertResult] = await pool.query(
+            `INSERT INTO informacion_medica (${insertColumns.join(', ')}) VALUES (${placeholders})`,
+            insertParams
+        );
+
+        return insertResult;
     }
 }
 
