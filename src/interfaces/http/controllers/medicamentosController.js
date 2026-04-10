@@ -15,15 +15,18 @@ class MedicamentosController {
     }
 
     async createMedicamento(req, res) {
-        console.log('--- REQ.BODY RECIBIDO EN MEDICAMENTOS ---');
-        console.log(req.body);
         try {
             const userId = req.user.id;
-            const { nombre_medicamento, dosis, via_administracion } = req.body;
-            const cantidad_dosis = req.body.cantidad_dosis ?? req.body.cantidad_dosis_dia ?? null;
+            const nombre_medicamento = req.body.nombre_medicamento || req.body.nombre || null;
+            const dosis = req.body.dosis || null;
+            const via_administracion = req.body.via_administracion || req.body.viaAdministracion || req.body.via || null;
+            const cantidad_dosis = req.body.cantidad_dosis ?? req.body.cantidad_dosis_dia ?? req.body.cantidadDosis ?? null;
 
             if (!nombre_medicamento || !dosis || !via_administracion) {
-                return res.status(400).json({ error: 'nombre_medicamento, dosis y via_administracion son requeridos' });
+                return res.status(400).json({
+                    error: 'nombre_medicamento, dosis y via_administracion son requeridos',
+                    received: Object.keys(req.body)
+                });
             }
 
             const result = await this.medicamentosRepository.createMedicamento(userId, {
@@ -45,11 +48,16 @@ class MedicamentosController {
         try {
             const userId = req.user.id;
             const { id } = req.params;
-            const { nombre_medicamento, dosis, via_administracion } = req.body;
-            const cantidad_dosis = req.body.cantidad_dosis ?? req.body.cantidad_dosis_dia ?? null;
+            const nombre_medicamento = req.body.nombre_medicamento || req.body.nombre || null;
+            const dosis = req.body.dosis || null;
+            const via_administracion = req.body.via_administracion || req.body.viaAdministracion || req.body.via || null;
+            const cantidad_dosis = req.body.cantidad_dosis ?? req.body.cantidad_dosis_dia ?? req.body.cantidadDosis ?? null;
 
             if (!nombre_medicamento || !dosis || !via_administracion) {
-                return res.status(400).json({ error: 'nombre_medicamento, dosis y via_administracion son requeridos' });
+                return res.status(400).json({
+                    error: 'nombre_medicamento, dosis y via_administracion son requeridos',
+                    received: Object.keys(req.body)
+                });
             }
 
             const result = await this.medicamentosRepository.updateMedicamento(id, userId, {
