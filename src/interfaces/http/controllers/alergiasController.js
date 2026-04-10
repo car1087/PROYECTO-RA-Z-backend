@@ -15,14 +15,18 @@ class AlergiasController {
     }
 
     async createAlergia(req, res) {
-        console.log('--- REQ.BODY RECIBIDO EN ALERGIAS ---');
-        console.log(req.body);
         try {
             const userId = req.user.id;
-            const { tipo_alergia, severidad_reaccion, sustancia, observaciones } = req.body;
+            const tipo_alergia = req.body.tipo_alergia || req.body.tipo || req.body.categoria || null;
+            const severidad_reaccion = req.body.severidad_reaccion || req.body.severidad || null;
+            const sustancia = req.body.sustancia || req.body.alergeno || req.body.nombre || null;
+            const observaciones = req.body.observaciones || req.body.notas || req.body.descripcion || null;
 
             if (!tipo_alergia || !severidad_reaccion || !sustancia) {
-                return res.status(400).json({ error: 'Tipo de alergia, severidad y sustancia son requeridos' });
+                return res.status(400).json({
+                    error: 'Tipo de alergia, severidad y sustancia son requeridos',
+                    received: Object.keys(req.body)
+                });
             }
 
             const result = await this.alergiasRepository.createAlergia(userId, {
@@ -34,7 +38,7 @@ class AlergiasController {
             res.status(201).json({ message: 'Alergia creada correctamente', id: result.insertId });
         } catch (error) {
             console.error('Error al crear alergia:', error);
-            res.status(500).json({ error: 'Error al crear alergia' });
+            res.status(500).json({ message: 'Error al crear alergia', error: 'Error al crear alergia', code: error.code || null, detail: error.message || null });
         }
     }
 
@@ -42,10 +46,16 @@ class AlergiasController {
         try {
             const userId = req.user.id;
             const { id } = req.params;
-            const { tipo_alergia, severidad_reaccion, sustancia, observaciones } = req.body;
+            const tipo_alergia = req.body.tipo_alergia || req.body.tipo || req.body.categoria || null;
+            const severidad_reaccion = req.body.severidad_reaccion || req.body.severidad || null;
+            const sustancia = req.body.sustancia || req.body.alergeno || req.body.nombre || null;
+            const observaciones = req.body.observaciones || req.body.notas || req.body.descripcion || null;
 
             if (!tipo_alergia || !severidad_reaccion || !sustancia) {
-                return res.status(400).json({ error: 'Tipo de alergia, severidad y sustancia son requeridos' });
+                return res.status(400).json({
+                    error: 'Tipo de alergia, severidad y sustancia son requeridos',
+                    received: Object.keys(req.body)
+                });
             }
 
             const result = await this.alergiasRepository.updateAlergia(id, userId, {
@@ -62,7 +72,7 @@ class AlergiasController {
             res.json({ message: 'Alergia actualizada correctamente' });
         } catch (error) {
             console.error('Error al actualizar alergia:', error);
-            res.status(500).json({ error: 'Error al actualizar alergia' });
+            res.status(500).json({ message: 'Error al actualizar alergia', error: 'Error al actualizar alergia', code: error.code || null, detail: error.message || null });
         }
     }
 
