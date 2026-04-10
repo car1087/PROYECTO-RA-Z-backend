@@ -19,31 +19,25 @@ class MedicamentosController {
         console.log(req.body);
         try {
             const userId = req.user.id;
-            const { nombre_medicamento, dosis, via_administracion, cantidad_dosis_dia } = req.body;
+            const { nombre_medicamento, dosis, via_administracion } = req.body;
+            const cantidad_dosis = req.body.cantidad_dosis ?? req.body.cantidad_dosis_dia ?? null;
 
-            console.log('--- VALORES DE CAMPOS ---');
-            console.log('nombre_medicamento:', nombre_medicamento);
-            console.log('dosis:', dosis);
-            console.log('via_administracion:', via_administracion);
-            console.log('cantidad_dosis_dia:', cantidad_dosis_dia);
-
-            // Validaciones básicas
-            if (!nombre_medicamento || !dosis || !via_administracion || !cantidad_dosis_dia) {
-                return res.status(400).json({ error: 'Todos los campos son requeridos' });
+            if (!nombre_medicamento || !dosis || !via_administracion) {
+                return res.status(400).json({ error: 'nombre_medicamento, dosis y via_administracion son requeridos' });
             }
 
             const result = await this.medicamentosRepository.createMedicamento(userId, {
                 nombre_medicamento,
                 dosis,
                 via_administracion,
-                cantidad_dosis_dia
+                cantidad_dosis,
+                cantidad_dosis_dia: cantidad_dosis
             });
 
             res.status(201).json({ message: 'Medicamento creado correctamente', id: result.insertId });
         } catch (error) {
-            console.error('--- ERROR AL CREAR MEDICAMENTO ---');
-            console.error(error); // Imprime el error completo
-            res.status(400).json({ error: 'Error al procesar la solicitud', message: error.message });
+            console.error('Error al crear medicamento:', error);
+            res.status(500).json({ message: 'Error al crear medicamento', error: 'Error al crear medicamento', code: error.code || null, detail: error.message || null });
         }
     }
 
@@ -51,18 +45,19 @@ class MedicamentosController {
         try {
             const userId = req.user.id;
             const { id } = req.params;
-            const { nombre_medicamento, dosis, via_administracion, cantidad_dosis_dia } = req.body;
+            const { nombre_medicamento, dosis, via_administracion } = req.body;
+            const cantidad_dosis = req.body.cantidad_dosis ?? req.body.cantidad_dosis_dia ?? null;
 
-            // Validaciones básicas
-            if (!nombre_medicamento || !dosis || !via_administracion || !cantidad_dosis_dia) {
-                return res.status(400).json({ error: 'Todos los campos son requeridos' });
+            if (!nombre_medicamento || !dosis || !via_administracion) {
+                return res.status(400).json({ error: 'nombre_medicamento, dosis y via_administracion son requeridos' });
             }
 
             const result = await this.medicamentosRepository.updateMedicamento(id, userId, {
                 nombre_medicamento,
                 dosis,
                 via_administracion,
-                cantidad_dosis_dia
+                cantidad_dosis,
+                cantidad_dosis_dia: cantidad_dosis
             });
 
             if (result.affectedRows === 0) {
